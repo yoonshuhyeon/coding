@@ -7,7 +7,7 @@ from map_tab import run_map_tab
 def load_waste_data():
     try:
         # 다양한 인코딩 시도 (EUC-KR, CP949)
-        df = pd.read_csv("data/생활쓰레기배출정보.csv", encoding="cp949")
+        df = pd.read_csv("data/waste_disposal_info.csv", encoding="cp949")
         # 데이터 정제: 시도명 + 시군구명을 합쳐 지역명 생성
         df['지역명'] = df['시도명'] + " " + df['시군구명']
         return df
@@ -72,7 +72,7 @@ st.markdown("""
     [data-testid="stExpander"] [data-testid="stMarkdownContainer"] p,
     [data-testid="stExpander"] [data-testid="stMarkdownContainer"] li,
     [data-testid="stExpander"] [data-testid="stMarkdownContainer"] span {
-        color: var(--text-color, #2F3E33) !important; /* 배경이 검어지면 글씨는 알아서 하얗게 변함 */
+        color: var(--text-color, #2F3E33) !important;
     }
     
     .header-banner {
@@ -113,7 +113,6 @@ st.markdown("""
         line-height: 1.6;
     }
 
-/* 카메라 */
     .camera-section {
         background-color: #FFFFFF;
         padding: 2rem;
@@ -135,7 +134,7 @@ st.markdown("""
 
     .responsive-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 반응형 핵심: 좁아지면 1열, 넓어지면 2열 */
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.2rem;
         margin-top: 1rem;
         margin-bottom: 1.5rem;
@@ -184,27 +183,9 @@ st.markdown("""
         line-height: 1.6;
     }
     
-    /* 지도 */
-    .map-placeholder {
-        background-color: #F1F5F2;
-        border: 1px solid rgba(15, 42, 23, 0.1);
-        border-radius: 20px;
-        padding: 4.5rem 2rem;
-        text-align: center;
-        color: #0F2A17;
-        margin: 1.5rem 0;
-        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.01);
-    }
-    
-    .map-icon {
-        font-size: 3rem;
-        margin-bottom: 1.2rem;
-        filter: drop-shadow(0 4px 10px rgba(15, 42, 23, 0.1));
-    }
-    
     .badge-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* 기기 폭에 맞춰 한 줄 혹은 여러 줄 자동 배치 */
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
         gap: 12px;
         margin: 1.5rem 0;
     }
@@ -291,11 +272,7 @@ st.markdown("""
 st.markdown("""
     <div class="header-banner">
         <div class="header-tag">The green standard</div>
-<<<<<<< HEAD:app.py
         <div class="header-title">🍀 쓰담쓰담 (쓰레기를 담다)</div>
-=======
-        <div class="header-title">🍀 쓰담쓰담 (쓰레기를 담다.)</div>
->>>>>>> 6c6a2b12b8a171be1b6e145e9b50630a56f5cc0f:greenguide.py
         <div class="header-subtitle">지속 가능한 삶을 위한 맞춤형 분리수거 플랫폼.<br>우리 지역의 세부 규정부터 정확한 수거함 안내까지 한눈에 조회하세요.</div>
     </div>
 """, unsafe_allow_html=True)
@@ -379,7 +356,6 @@ with tab2:
             label_visibility="collapsed"
         )
         
-        # 선택된 지역 데이터 필터링
         region_data = waste_df[waste_df['지역명'] == selected_region].iloc[0]
         
         st.write("")

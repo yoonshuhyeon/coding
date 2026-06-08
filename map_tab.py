@@ -4,9 +4,9 @@ from pathlib import Path
 import folium
 import streamlit as st
 from folium.plugins import MarkerCluster
-from streamlit.components.v1 import html
+from streamlit_folium import st_folium
 
-DATA_FILE = Path(__file__).parent / "data" / "전국휴지통표준데이터.json"
+DATA_FILE = Path(__file__).parent / "data" / "trash_locations.json"
 
 
 def load_trash_data():
@@ -121,7 +121,7 @@ def run_map_tab():
             icon=folium.Icon(color=marker_color, icon="trash", prefix="fa"),
         ).add_to(marker_cluster)
 
-    html(folium_map._repr_html_(), height=650)
+    st_folium(folium_map, width=700, height=650, returned_objects=[])
 
     st.markdown(
         """
