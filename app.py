@@ -1,14 +1,14 @@
 import streamlit as st
 import pandas as pd
+# 모듈 임포트
 from recognition_tab import run_recognition_tab
 from map_tab import run_map_tab
 
 @st.cache_data
 def load_waste_data():
     try:
-        # 다양한 인코딩 시도 (EUC-KR, CP949)
+        # 영문 파일명으로 데이터 로드
         df = pd.read_csv("data/waste_disposal_info.csv", encoding="cp949")
-        # 데이터 정제: 시도명 + 시군구명을 합쳐 지역명 생성
         df['지역명'] = df['시도명'] + " " + df['시군구명']
         return df
     except Exception as e:
