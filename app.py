@@ -291,7 +291,11 @@ st.markdown("""
 st.markdown("""
     <div class="header-banner">
         <div class="header-tag">The green standard</div>
+<<<<<<< HEAD:app.py
         <div class="header-title">🍀 쓰담쓰담 (쓰레기를 담다)</div>
+=======
+        <div class="header-title">🍀 쓰담쓰담 (쓰레기를 담다.)</div>
+>>>>>>> 6c6a2b12b8a171be1b6e145e9b50630a56f5cc0f:greenguide.py
         <div class="header-subtitle">지속 가능한 삶을 위한 맞춤형 분리수거 플랫폼.<br>우리 지역의 세부 규정부터 정확한 수거함 안내까지 한눈에 조회하세요.</div>
     </div>
 """, unsafe_allow_html=True)
