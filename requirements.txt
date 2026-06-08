@@ -6,4 +6,4 @@ numpy
 scikit-image
 scikit-learn
 folium
-tensorflow
+streamlit-folium
