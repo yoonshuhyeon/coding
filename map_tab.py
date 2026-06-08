@@ -83,14 +83,9 @@ def run_map_tab():
     if selected_district != "전체":
         filtered = [record for record in filtered if record["시군구명"] == selected_district]
 
-    # 너무 많은 데이터는 브라우저를 멈추게 하므로 제한
-    MAX_MARKERS = 1000
+    # 모든 데이터를 표시 (제한 제거)
     display_data = filtered
-    if len(filtered) > MAX_MARKERS:
-        st.info(f"결과가 너무 많아 상위 {MAX_MARKERS}개만 표시합니다. 지역을 더 좁혀보세요.")
-        display_data = filtered[:MAX_MARKERS]
-
-    st.markdown(f"**표시 중:** {len(display_data)}개 / **전체 검색:** {len(filtered)}개")
+    st.markdown(f"**검색 결과:** {len(display_data)}개 위치 표시 중")
 
     if not display_data:
         st.info("선택한 지역에 해당하는 데이터가 없습니다.")
@@ -100,12 +95,13 @@ def run_map_tab():
     avg_lat = sum(record["위도"] for record in display_data) / len(display_data)
     avg_lon = sum(record["경도"] for record in display_data) / len(display_data)
 
-    # 지도 생성 (가장 표준적인 OpenStreetMap 사용)
+    # 지도 생성
     folium_map = folium.Map(
         location=[avg_lat, avg_lon],
         zoom_start=13,
     )
     
+    # 클러스터링을 사용하여 수만 개의 마커를 효율적으로 표시
     marker_cluster = MarkerCluster().add_to(folium_map)
 
     for record in display_data:
@@ -117,7 +113,7 @@ def run_map_tab():
             icon=folium.Icon(color="green", icon="info-sign"),
         ).add_to(marker_cluster)
 
-    # 렌더링 (folium_static이 배포 환경에서 더 안정적임)
+    # 렌더링
     folium_static(folium_map, width=700, height=500)
 
-    st.markdown("💡 **Tip**: 지도를 확대하거나 마커를 클릭하여 상세 정보를 확인하세요.")
+    st.markdown("💡 **Tip**: 지도를 확대하면 클러스터가 풀리면서 개별 마커가 나타납니다.")
