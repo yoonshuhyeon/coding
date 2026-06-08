@@ -18,7 +18,7 @@ def load_waste_data():
 waste_df = load_waste_data()
 
 st.set_page_config(
-    page_title="그린가이드",
+    page_title="쓰담쓰담",
     page_icon="🌿",
     layout="centered"  
 )
@@ -291,7 +291,7 @@ st.markdown("""
 st.markdown("""
     <div class="header-banner">
         <div class="header-tag">The green standard</div>
-        <div class="header-title">🍀 그린가이드 (Green Guide)</div>
+        <div class="header-title">🍀 쓰담쓰담 (쓰레기를 담다)</div>
         <div class="header-subtitle">지속 가능한 삶을 위한 맞춤형 분리수거 플랫폼.<br>우리 지역의 세부 규정부터 정확한 수거함 안내까지 한눈에 조회하세요.</div>
     </div>
 """, unsafe_allow_html=True)
