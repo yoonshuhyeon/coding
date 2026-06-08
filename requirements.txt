@@ -1,0 +1,9 @@
+streamlit
+pandas
+joblib
+Pillow
+numpy
+scikit-image
+scikit-learn
+folium
+tensorflow

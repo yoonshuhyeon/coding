@@ -1,0 +1,8 @@
+__pycache__/
+.DS_Store
+dataset/
+dataset_small/
+생활 폐기물 이미지/
+*.zip
+*.h5
+# *.pkl is included because waste_model.pkl is small enough for GitHub.
