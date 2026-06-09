@@ -5,9 +5,8 @@ import os
 import sys
 import threading
 
-# 모델 예측 시 스레드 충돌 방지를 위한 Lock
-if 'model_lock' not in st.session_state:
-    st.session_state.model_lock = threading.Lock()
+# 모델 예측 시 스레드 충돌 방지를 위한 전역 Lock (모든 세션에서 공유)
+MODEL_LOCK = threading.Lock()
 
 # 모델 및 라벨 로드
 @st.cache_resource
@@ -21,8 +20,6 @@ def load_ai_model_cnn():
     
     try:
         import tensorflow as tf
-        # Streamlit의 멀티스레드 환경에서 Keras의 global state 문제를 방지하기 위해 
-        # 필요한 경우 내부 설정을 조정할 수 있습니다.
     except ImportError:
         st.error("TensorFlow가 설치되어 있지 않습니다.")
         return None, None
@@ -111,9 +108,3 @@ def run_recognition_tab():
                 except Exception as e:
                     st.error(f"분석 중 오류가 발생했습니다: {e}")
                     st.info("Tip: 페이지를 새로고침(F5)한 뒤 다시 시도해 보세요.")
-
-
-}")
-                    st.info("Tip: 페이지를 새로고침(F5)한 뒤 다시 시도해 보세요.")
-
-
