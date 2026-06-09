@@ -43,8 +43,8 @@ def train():
     clf.fit(X, y)
     
     # 모델 및 라벨 저장
-    joblib.dump(clf, 'waste_model.pkl')
-    with open("labels.txt", "w", encoding="utf-8") as f:
+    joblib.dump(clf, 'models/waste_model.pkl')
+    with open("models/labels.txt", "w", encoding="utf-8") as f:
         f.write("\n".join(class_names))
         
     print("모델 학습 완료 및 waste_model.pkl 저장됨.")

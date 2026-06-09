@@ -141,15 +141,14 @@ st.markdown("""
     }
 
     .info-card {
-        background-color: #FFFFFF;
+        background-color: #fffff;
         padding: 1.8rem;
-        border-radius: 18px;
         border: 1px solid rgba(15, 42, 23, 0.06);
-        box-shadow: 0 4px 20px rgba(15, 42, 23, 0.02);
-        display: flex;
+        box-shadow: 0 4px 20pxrgba(15,42,23, 0.02);
+        dispaly: flex;
         flex-direction: column;
         justify-content: space-between;
-    }
+        }
     
     .info-card:hover {
         transform: translateY(-5px);
