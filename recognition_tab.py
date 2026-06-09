@@ -3,6 +3,11 @@ from PIL import Image
 import numpy as np
 import os
 import sys
+import threading
+
+# 모델 예측 시 스레드 충돌 방지를 위한 Lock
+if 'model_lock' not in st.session_state:
+    st.session_state.model_lock = threading.Lock()
 
 # 모델 및 라벨 로드
 @st.cache_resource
@@ -12,11 +17,12 @@ def load_ai_model_cnn():
     
     # Python 3.13 환경에서 TensorFlow 임포트 시 발생하는 Segmentation Fault 방지 안내
     if sys.version_info.major == 3 and sys.version_info.minor >= 13:
-        st.error("⚠️ 현재 Python 3.13 환경입니다. 이 버전은 TensorFlow와 호환되지 않아 프로그램이 종료될 수 있습니다.")
-        st.info("💡 터미널에서 `conda activate waste_env`를 입력하여 전용 환경으로 전환 후 실행해 주세요.")
+        st.warning("⚠️ 현재 Python 3.13 환경입니다. TensorFlow 안정성 문제가 발생할 수 있습니다.")
     
     try:
         import tensorflow as tf
+        # Streamlit의 멀티스레드 환경에서 Keras의 global state 문제를 방지하기 위해 
+        # 필요한 경우 내부 설정을 조정할 수 있습니다.
     except ImportError:
         st.error("TensorFlow가 설치되어 있지 않습니다.")
         return None, None
@@ -25,7 +31,6 @@ def load_ai_model_cnn():
         return None, None
 
     if os.path.exists(model_path) and os.path.exists(label_path):
-        # Keras 모델 로드
         try:
             model = tf.keras.models.load_model(model_path)
             with open(label_path, "r", encoding="utf-8") as f:
@@ -59,7 +64,7 @@ def run_recognition_tab():
     
     if active_image:
         if model is None:
-            st.info("💡 CNN 모델 학습 파일을 찾을 수 없습니다. `train/train_model_cnn.py`를 실행하여 모델을 먼저 학습시켜 주세요.")
+            st.info("💡 AI 모델 파일을 불러올 수 없습니다. 모델 파일이 올바른 경로(`models/`)에 있는지 확인해 주세요.")
             st.image(active_image, caption="업로드된 이미지", use_container_width=True)
         else:
             # 이미지 로드 및 전처리
@@ -69,36 +74,43 @@ def run_recognition_tab():
             with st.spinner("딥러닝 신경망이 이미지를 정밀 분석 중입니다..."):
                 # CNN 모델 입력 규격에 맞게 전처리 (224x224, normalized)
                 img_resized = img.resize((224, 224))
-                img_array = np.array(img_resized) / 255.0  # 스케일링
-                img_array = np.expand_dims(img_array, axis=0)  # 배치 차원 추가
+                img_array = np.array(img_resized) / 255.0
+                img_array = np.expand_dims(img_array, axis=0).astype(np.float32)
                 
-                # 예측
-                predictions = model.predict(img_array)
-                class_idx = np.argmax(predictions[0])
-                confidence = 100 * predictions[0][class_idx]
-                result_label = labels[class_idx]
+                # 예측 (Thread-safe)
+                try:
+                    with st.session_state.model_lock:
+                        # Streamlit Cloud (Keras 3+)에서 발생할 수 있는 name_scope_stack 오류 방지
+                        # 일부 Keras 버전에서 발생하는 스레드 로컬 데이터 소실 문제를 대비
+                        predictions = model.predict(img_array, verbose=0)
+                    
+                    class_idx = np.argmax(predictions[0])
+                    confidence = 100 * predictions[0][class_idx]
+                    result_label = labels[class_idx]
 
-            # 결과 표시
-            st.success(f"분석 결과: **{result_label}** (신뢰도: {confidence:.2f}%)")
-            
-            # 품목별 가이드 매칭
-            guides = {
-                "plastic": "내용물을 비우고 라벨을 제거한 뒤 배출하세요.",
-                "paper": "테이프나 스프링 등 이물질을 제거하고 납작하게 펴서 배출하세요.",
-                "glass": "병뚜껑을 제거하고 깨끗이 씻어서 배출하세요. 깨진 유리는 신문지에 싸서 일반 쓰레기로 버리세요.",
-                "can": "내용물을 비우고 캔 고리 등을 분리하여 압착 후 배출하세요.",
-                "cardboard": "박스의 테이프와 송장을 제거하고 펼쳐서 배출하세요.",
-                "metal": "캔류와 고철류를 구분하여 이물질 없이 배출하세요."
-            }
-            
-            # 소문자로 변환하여 매칭 시도
-            guide_text = guides.get(result_label.lower(), "해당 품목의 상세 배출 가이드는 '분리배출 가이드' 탭을 참고하세요.")
-            
-            st.markdown(f"""
-                <div style="background-color: #EBF2ED; padding: 1.2rem; border-radius: 12px; border-left: 5px solid #0F2A17;">
-                    <div style="font-weight: 700; color: #0F2A17; margin-bottom: 5px;">✅ 올바른 배출 방법</div>
-                    <div style="color: #2F3E33; font-size: 0.95rem;">{guide_text}</div>
-                </div>
-            """, unsafe_allow_html=True)
+                    # 결과 표시
+                    st.success(f"분석 결과: **{result_label}** (신뢰도: {confidence:.2f}%)")
+                    
+                    # 품목별 가이드 매칭
+                    guides = {
+                        "plastic": "내용물을 비우고 라벨을 제거한 뒤 배출하세요.",
+                        "paper": "테이프나 스프링 등 이물질을 제거하고 납작하게 펴서 배출하세요.",
+                        "glass": "병뚜껑을 제거하고 깨끗이 씻어서 배출하세요. 깨진 유리는 신문지에 싸서 일반 쓰레기로 버리세요.",
+                        "can": "내용물을 비우고 캔 고리 등을 분리하여 압착 후 배출하세요.",
+                        "cardboard": "박스의 테이프와 송장을 제거하고 펼쳐서 배출하세요.",
+                        "metal": "캔류와 고철류를 구분하여 이물질 없이 배출하세요."
+                    }
+                    
+                    guide_text = guides.get(result_label.lower(), "해당 품목의 상세 배출 가이드는 '분리배출 가이드' 탭을 참고하세요.")
+                    
+                    st.markdown(f"""
+                        <div style="background-color: #EBF2ED; padding: 1.2rem; border-radius: 12px; border-left: 5px solid #0F2A17;">
+                            <div style="font-weight: 700; color: #0F2A17; margin-bottom: 5px;">✅ 올바른 배출 방법</div>
+                            <div style="color: #2F3E33; font-size: 0.95rem;">{guide_text}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"분석 중 오류가 발생했습니다: {e}")
+                    st.info("Tip: 페이지를 새로고침(F5)한 뒤 다시 시도해 보세요.")
 
 
