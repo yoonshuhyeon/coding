@@ -79,9 +79,8 @@ def run_recognition_tab():
                 
                 # 예측 (Thread-safe)
                 try:
-                    with st.session_state.model_lock:
+                    with MODEL_LOCK:
                         # Streamlit Cloud (Keras 3+)에서 발생할 수 있는 name_scope_stack 오류 방지
-                        # 일부 Keras 버전에서 발생하는 스레드 로컬 데이터 소실 문제를 대비
                         predictions = model.predict(img_array, verbose=0)
                     
                     class_idx = np.argmax(predictions[0])
@@ -111,6 +110,10 @@ def run_recognition_tab():
                     """, unsafe_allow_html=True)
                 except Exception as e:
                     st.error(f"분석 중 오류가 발생했습니다: {e}")
+                    st.info("Tip: 페이지를 새로고침(F5)한 뒤 다시 시도해 보세요.")
+
+
+}")
                     st.info("Tip: 페이지를 새로고침(F5)한 뒤 다시 시도해 보세요.")
 
 
