@@ -1,8 +1,8 @@
 import streamlit as st
-import tensorflow as tf
 from PIL import Image
 import numpy as np
 import os
+import sys
 
 # 모델 및 라벨 로드
 @st.cache_resource
@@ -10,6 +10,20 @@ def load_ai_model_cnn():
     model_path = "models/waste_model_cnn.h5"
     label_path = "models/labels.txt"
     
+    # Python 3.13 환경에서 TensorFlow 임포트 시 발생하는 Segmentation Fault 방지 안내
+    if sys.version_info.major == 3 and sys.version_info.minor >= 13:
+        st.error("⚠️ 현재 Python 3.13 환경입니다. 이 버전은 TensorFlow와 호환되지 않아 프로그램이 종료될 수 있습니다.")
+        st.info("💡 터미널에서 `conda activate waste_env`를 입력하여 전용 환경으로 전환 후 실행해 주세요.")
+    
+    try:
+        import tensorflow as tf
+    except ImportError:
+        st.error("TensorFlow가 설치되어 있지 않습니다.")
+        return None, None
+    except Exception as e:
+        st.error(f"TensorFlow 로드 중 오류 발생: {e}")
+        return None, None
+
     if os.path.exists(model_path) and os.path.exists(label_path):
         # Keras 모델 로드
         try:
@@ -86,3 +100,5 @@ def run_recognition_tab():
                     <div style="color: #2F3E33; font-size: 0.95rem;">{guide_text}</div>
                 </div>
             """, unsafe_allow_html=True)
+
+
