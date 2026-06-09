@@ -69,15 +69,24 @@ def run_recognition_tab():
             st.image(img, caption="분석 대상 이미지", use_container_width=True)
             
             with st.spinner("딥러닝 신경망이 이미지를 정밀 분석 중입니다..."):
-                # CNN 모델 입력 규격에 맞게 전처리 (224x224, normalized)
-                img_resized = img.resize((224, 224))
-                img_array = np.array(img_resized) / 255.0
+                # 1. 고품질 리사이징 (LANCZOS 필터 사용)
+                img_resized = img.resize((224, 224), Image.Resampling.LANCZOS)
+                
+                # 2. 배열 변환 및 차원 확장
+                img_array = np.array(img_resized)
                 img_array = np.expand_dims(img_array, axis=0).astype(np.float32)
+                
+                # 3. MobileNetV2 전용 전처리 (학습 시와 동일한 환경 구축)
+                try:
+                    from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+                    img_array = preprocess_input(img_array)
+                except:
+                    # 임포트 실패 시 수동 정규화 (MobileNetV2는 [-1, 1] 범위를 사용)
+                    img_array = (img_array / 127.5) - 1.0
                 
                 # 예측 (Thread-safe)
                 try:
                     with MODEL_LOCK:
-                        # Streamlit Cloud (Keras 3+)에서 발생할 수 있는 name_scope_stack 오류 방지
                         predictions = model.predict(img_array, verbose=0)
                     
                     class_idx = np.argmax(predictions[0])
